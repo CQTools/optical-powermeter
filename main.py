@@ -11,12 +11,15 @@ from kivy.uix.textinput import TextInput
 from kivy.properties import NumericProperty, BooleanProperty, ObjectProperty
 from kivy.clock import Clock
 from kivy.garden.graph import Graph, MeshLinePlot
+from kivy.uix.dropdown import DropDown
+from kivy.uix.button import Button
 import re
 import os
-# For now path to ardumashtun is hard coded, sorry
+import glob
+import serial
 
+import powermeter as pm
 
-import ardumashtun as mash
 
 
 class FloatInput(TextInput):
@@ -33,15 +36,10 @@ class FloatInput(TextInput):
             s = '.'.join([re.sub(pat, '', s) for s in substring.split('.', 1)])
         return super(FloatInput, self).insert_text(s, from_undo=from_undo)
 
-class BrewControl(Widget):
-    temperature = NumericProperty(0)
-    pump_status = BooleanProperty(False)
-    pid_status = BooleanProperty(False)
-    heater_status = BooleanProperty(False)
-    setpoint = NumericProperty(0)
-    p_value = NumericProperty(0)
-    i_value = NumericProperty(0)
-    dutycycle = NumericProperty(0)
+class PowerMeterControl(Widget):
+    power = NumericProperty(0)
+    voltage = NumericProperty(0)
+    wavelength = NumericProperty(780.0)
     connected = BooleanProperty(False)
 
     graph = Graph(xlabel='X', ylabel='Y', x_ticks_minor=5,
@@ -50,61 +48,56 @@ class BrewControl(Widget):
             x_grid=True, y_grid=True, ymin=10, ymax=110)
     plot = ObjectProperty(None)
 
-    mashtun = None
+    powermeter = None
 
     iteration = 0
     #print connection
     def update(self, dt):
-        self.temperature = self.mashtun.temperature
-        self.heater_status = self.mashtun.heater
-        self.pump_status = self.mashtun.pump
-        self.pid_status = self.mashtun.pid
-        self.setpoint = self.mashtun.setpoint
-        self.p_value = self.mashtun.p_value
-        self.i_value = self.mashtun.i_value
-        self.dutycycle = self.mashtun.dutycycle
-
-        self.plot.points.append((self.iteration/60, self.temperature))
-        #print self.plot.points
+        self.voltage = float(self.powermeter.get_voltage())
+        self.power = self.powermeter.amp2power(self.wavelength,int(self.pm_range))
+        #print self.powermeter.get_voltage()
+      
+       
+        
 
         self.iteration += 1
 
-    def toggle_pump(self):
-        self.mashtun.pump = not self.mashtun.pump
+#
+#    def count_calls(fn):
+#        def _counting(*args, **kwargs):
+#            _counting.calls += 1
+#            return fn(*args, **kwargs)
+#        _counting.calls = 0
+#    return _counting
+#
+#    @count_calls
+    def update_range(self, value):
+        self.pm_range = value
+        if self.connected == True:
+            self.powermeter.set_range(int(self.pm_range))
+        
 
-    def toggle_heater(self):
-        # Turn off pid control
-        if self.mashtun.pid:
-            self.mashtun.pid = False
-
-        # If heater is on turn it off by setting dutycycle to 0
-        # otherwise turn it on by setting it to 100
-        dutycycle = 0 if self.heater_status else 100
-
-        self.update_parameter('dutycycle', dutycycle)
-
-    def toggle_pid(self):
-        self.mashtun.pid = not self.mashtun.pid
-
-    def update_parameter(self, parameter, value):
-        setattr(self.mashtun, parameter, value)
-
-    def connect_to_arduino(self, connection):
+    def connect_to_powermeter(self, connection):
         if not self.connected:
-            os.system("su root chmod 777 " + connection)
-            self.mashtun = mash.UnoMashtun(connection)
-            Clock.schedule_interval(self.update, 1.0)
+            #os.system("su root chmod 777 " + connection) #comment this line when debugging on linux
+            self.powermeter = pm.pmcommunication(connection)
+            Clock.schedule_interval(self.update, 0.2)
             self.connected = True
             plot = MeshLinePlot(color=[1, 0, 0, 1])
             self.plot = plot
             self.ids.graph.add_plot(plot)
-         
-
-class BrewApp(App):
+ 
+    def serial_ports_android(self):
+        #Lists serial ports
+        ports = glob.glob('/dev/ttyACM*')
+        return ports
+    
+      
+class PowermeterApp(App):
     def build(self):
-        control = BrewControl()
+        control = PowerMeterControl()
         return control
 
 
 if __name__ == '__main__':
-    BrewApp().run()
+    PowermeterApp().run()
