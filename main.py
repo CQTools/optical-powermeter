@@ -7,18 +7,24 @@ Created on Wed Aug 27 11:13:37 2014
 
 from kivy.app import App
 from kivy.uix.widget import Widget
+from kivy.factory import Factory
 from kivy.uix.textinput import TextInput
 from kivy.properties import NumericProperty, BooleanProperty, ObjectProperty
 from kivy.clock import Clock
+from kivy.lang import Builder
+from kivy.utils import Platform
 from kivy.garden.graph import Graph, MeshLinePlot
-from kivy.uix.dropdown import DropDown
-from kivy.uix.button import Button
+from kivy.uix.tabbedpanel import TabbedPanel
 import re
 import os
 import glob
-import serial
+import json
 
 import powermeter as pm
+
+
+class TabbedPanelItem(TabbedPanel):
+     pass
 
 
 
@@ -36,7 +42,7 @@ class FloatInput(TextInput):
             s = '.'.join([re.sub(pat, '', s) for s in substring.split('.', 1)])
         return super(FloatInput, self).insert_text(s, from_undo=from_undo)
 
-class PowerMeterControl(Widget):
+class PowerMeterControl(TabbedPanel):
     power = NumericProperty(0)
     voltage = NumericProperty(0)
     wavelength = NumericProperty(780.0)
@@ -54,7 +60,7 @@ class PowerMeterControl(Widget):
     #print connection
     def update(self, dt):
         self.voltage = float(self.powermeter.get_voltage())
-        self.power = self.powermeter.amp2power(self.wavelength,int(self.pm_range))
+        self.power = self.amp2power(self.voltage,self.wavelength,int(self.pm_range))
         #print self.powermeter.get_voltage()
       
        
@@ -62,15 +68,6 @@ class PowerMeterControl(Widget):
 
         self.iteration += 1
 
-#
-#    def count_calls(fn):
-#        def _counting(*args, **kwargs):
-#            _counting.calls += 1
-#            return fn(*args, **kwargs)
-#        _counting.calls = 0
-#    return _counting
-#
-#    @count_calls
     def update_range(self, value):
         self.pm_range = value
         if self.connected == True:
@@ -79,9 +76,11 @@ class PowerMeterControl(Widget):
 
     def connect_to_powermeter(self, connection):
         if not self.connected:
-            #os.system("su root chmod 777 " + connection) #comment this line when debugging on linux
+            if Platform == 'android': #to get access to serial port on android
+                os.system("su root chmod 777 " + connection) 
+            self.data = self._read_cal_file()
             self.powermeter = pm.pmcommunication(connection)
-            Clock.schedule_interval(self.update, 0.2)
+            Clock.schedule_interval(self.update, 0.5)
             self.connected = True
             plot = MeshLinePlot(color=[1, 0, 0, 1])
             self.plot = plot
@@ -92,11 +91,47 @@ class PowerMeterControl(Widget):
         ports = glob.glob('/dev/ttyACM*')
         return ports
     
+    
+        """this section of the code deals with converting between the voltage value and the
+    optical power at the wavelength of interest"""
+    
+    resistors = [1e6,110e3,10e3,1e3,100]    #sense resistor will fix later
+    
+    file_name = 's5106_interpolated.txt'    
+    
+
+    
+    def _read_cal_file(self):
+        f = open(self.file_name,'r')
+        x = json.load(f)
+        f.close()
+        return x
+        
+
+    def volt2amp(self,voltage,range_number):
+        self.amp = voltage/self.resistors[range_number]
+        return self.amp
+								
+    
+    def amp2power(self,voltage,wavelength,range_number):
+        amp = self.volt2amp(voltage,range_number-1)
+        xdata = self.data[0]
+        ydata = self.data[1]
+        i = xdata.index(int(wavelength))
+        responsivity = ydata[i]
+        power = amp/float(responsivity)
+        return power
       
 class PowermeterApp(App):
     def build(self):
         control = PowerMeterControl()
         return control
+    
+    def on_pause(self):
+        return True
+        
+    def on_resume(self):
+        pass
 
 
 if __name__ == '__main__':

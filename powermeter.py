@@ -6,7 +6,7 @@ Created on Mon Aug 25 19:12:31 2014
 """
 
 import serial
-import json
+
 
 class pmcommunication(object):
 # Module for communicating with the power meter    
@@ -14,9 +14,9 @@ class pmcommunication(object):
     
     def __init__(self, port):
         self.serial = self._open_port(port)
-        self.serial.write('a''\n')# flush io buffer
-        self._serial_read() #will read unknown command
-        self.data = self._read_cal_file() #reads in calibration file once stored as object data
+        #self.serial.write('a''\n')# flush io buffer
+        #self._serial_read() #will read unknown command
+        #self.data = self._read_cal_file() #reads in calibration file once stored as object data
         self.set_range(4) #Sets bias resistor to 1k
         
     def _open_port(self, port):
@@ -62,36 +62,7 @@ class pmcommunication(object):
         self._serial_write('*IDN?')
         return self._serial_read()
 
-    """this section of the code deals with converting between the voltage value and the
-    optical power at the wavelength of interest"""
-    
-    resistors = [1e6,110e3,10e3,1e3,100]    #sense resistor will fix later
-    
-    file_name = ('s5106_interpolated.txt')    
-    
 
-    
-    def _read_cal_file(self):
-        f = open(self.file_name,'r')
-        x = json.load(f)
-        f.close()
-        return x
-        
-
-    def volt2amp(self,voltage,range_number):
-        self.amp = voltage/self.resistors[range_number]
-        return self.amp
-								
-    
-    def amp2power(self,wavelength,range_number):
-        voltage = float(self.get_voltage())
-        amp = self.volt2amp(voltage,range_number-1)
-        xdata = self.data[0]
-        ydata = self.data[1]
-        i = xdata.index(int(wavelength))
-        responsivity = ydata[i]
-        power = amp/float(responsivity)
-        return power
     
     
        
