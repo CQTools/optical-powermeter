@@ -1,0 +1,143 @@
+<PropertyLabel@Label>:
+    halign: 'left'
+    text_size: self.width, None
+
+<EchoLabel@PropertyLabel>:
+    halign: 'center'
+    text_size: self.width, None
+
+
+
+<BoxLayout>:
+    orientation: 'horizontal'
+
+<PowerMeterControl>:
+    do_default_tab: False
+    TabbedPanelItem:
+        text: 'Setup'
+        Label: 
+
+      
+        
+            GridLayout:
+                id: connection_box
+                cols: 1
+                x: root.width / 8
+                width: root.width / 4
+                top: root.height - root.height / 8
+                row_default_height: 30
+                row_force_default: True
+        
+                PropertyLabel:
+                    text: 'Serial port'
+                
+                Spinner:
+                    id: connection_input
+                    text: 'Select Serial Port'
+                    values: root.serial_ports_android()
+                    size_hint_y: None
+                    
+                
+                
+        
+                Button:
+                    text: 'connect' if not root.connected else 'disconnect'
+                    on_release: root.connect_to_powermeter(connection_input.text)
+        
+            GridLayout:
+                id: main_params
+                cols: 2
+                x: connection_box.x
+                width: connection_box.width
+                row_default_height: connection_box.row_default_height
+                top: connection_box.y - self.row_default_height
+                row_force_default: True
+        
+                PropertyLabel:
+                    text: 'Power'
+        
+                EchoLabel:
+                    text: str(root.power)
+        
+                PropertyLabel:
+                    text: 'Wavelength'
+        
+        
+                FloatInput:
+                    id: wavelength
+                    text:'780'
+                    #value:780            
+                    on_text_validate: root.wavelength = (float(self.text))
+        
+                PropertyLabel:
+                    text: 'Select Range'
+                
+                Spinner:
+                    id: select_range
+                    #is_open: True
+                    #on_release: root.update_parameter(select_range.text) 
+                    text: '4'
+                    values:('1','2','3','4','5')
+                    size_hint_y: None
+                    _on_dropdown_select: root.update_range(select_range.text)
+        
+                PropertyLabel:
+                    text: 'Detector Voltage'
+        
+                EchoLabel:
+                    text: str(root.voltage) 
+                    
+                
+        
+               
+            GridLayout:
+                cols: 3
+                x: main_params.x
+                y: main_params.y - main_params.height - 2*main_params.row_default_height
+                width: main_params.width
+                row_default_height: main_params.row_default_height
+                row_force_default: True
+        
+        
+        
+                
+        
+            AnchorLayout:
+        
+                anchor_x: 'left'
+                anchor_y: 'bottom'
+        
+                x: root.x + 0.5*root.width
+                y: root.y + 0.25*root.height
+        
+                width: 0.4 * root.width
+                height: 0.5 * root.height
+        
+                Graph:
+                    id: graph
+                    xlabel: 'Time'
+                    ylabel: 'Power'
+                    background_color: [0,1,0,0]
+                    ymin: 10
+                    ymax: 110
+                    xmin: 0
+                    xmax: 100
+                    y_grid: 'True'
+                    y_ticks_major: 20
+                    y_grid_label: 'True'
+                    x_grid_label: 'True'
+                    x_grid: 'True'
+                    x_ticks_major: 10
+
+    TabbedPanelItem:
+        text: 'Power'
+        Label: 
+
+    TabbedPanelItem:
+        text: 'Power plot'
+        Label: 
+
+    TabbedPanelItem:
+        text: 'Power Log'
+        Label: 
+            text:'Coming in a future version'

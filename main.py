@@ -6,13 +6,10 @@ Created on Wed Aug 27 11:13:37 2014
 """
 
 from kivy.app import App
-from kivy.uix.widget import Widget
-from kivy.factory import Factory
 from kivy.uix.textinput import TextInput
 from kivy.properties import NumericProperty, BooleanProperty, ObjectProperty
 from kivy.clock import Clock
-from kivy.lang import Builder
-from kivy.utils import Platform
+from kivy.utils import platform
 from kivy.garden.graph import Graph, MeshLinePlot
 from kivy.uix.tabbedpanel import TabbedPanel
 import re
@@ -28,7 +25,7 @@ class TabbedPanelItem(TabbedPanel):
 
 
 
-class FloatInput(TextInput):
+class FloatInput(TextInput): 
 
     pat = re.compile('[^0-9]')
     multiline = False
@@ -76,7 +73,7 @@ class PowerMeterControl(TabbedPanel):
 
     def connect_to_powermeter(self, connection):
         if not self.connected:
-            if Platform == 'android': #to get access to serial port on android
+            if platform == 'android': #to get access to serial port on android
                 os.system("su root chmod 777 " + connection) 
             self.data = self._read_cal_file()
             self.powermeter = pm.pmcommunication(connection)
@@ -95,13 +92,13 @@ class PowerMeterControl(TabbedPanel):
         """this section of the code deals with converting between the voltage value and the
     optical power at the wavelength of interest"""
     
-    resistors = [1e6,110e3,10e3,1e3,100]    #sense resistor will fix later
+    resistors = [1e6,110e3,10e3,1e3,100]    #sense resistors adjust to what is on the board
     
-    file_name = 's5106_interpolated.txt'    
+    file_name = 's5106_interpolated.txt'    #detector calibration file
     
 
     
-    def _read_cal_file(self):
+    def _read_cal_file(self): # read in calibration file for sensor
         f = open(self.file_name,'r')
         x = json.load(f)
         f.close()
@@ -121,6 +118,9 @@ class PowerMeterControl(TabbedPanel):
         responsivity = ydata[i]
         power = amp/float(responsivity)
         return power
+    
+    def format_power(self):
+        pass
       
 class PowermeterApp(App):
     def build(self):
