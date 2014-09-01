@@ -17,7 +17,7 @@ class pmcommunication(object):
         #self.serial.write('a''\n')# flush io buffer
         #self._serial_read() #will read unknown command
         #self.data = self._read_cal_file() #reads in calibration file once stored as object data
-        self.set_range(4) #Sets bias resistor to 1k
+        #self.set_range(4) #Sets bias resistor to 1k
         
     def _open_port(self, port):
         ser = serial.Serial(port, self.baudrate, timeout=5)
@@ -41,7 +41,7 @@ class pmcommunication(object):
         return self._serial_read()
         
     def get_voltage(self):
-        self._serial_write('VOLT?')
+        self._serial_write('IN?3')
         voltage = self._serial_read()
         #print voltage
         return voltage

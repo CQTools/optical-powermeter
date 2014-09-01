@@ -1,10 +1,14 @@
 <PropertyLabel@Label>:
     halign: 'left'
     text_size: self.width, None
+    #color: [0,0,0,1]
+    bold:
 
 <EchoLabel@PropertyLabel>:
     halign: 'center'
     text_size: self.width, None
+    #color: [0,0,0,1]
+    bold: True
 
 
 
@@ -13,9 +17,12 @@
 
 <PowerMeterControl>:
     do_default_tab: False
+    background_color: [0,0,0,0]
     TabbedPanelItem:
         text: 'Setup'
-        Label: 
+        Label:
+            
+
 
       
         
@@ -97,46 +104,57 @@
                 width: main_params.width
                 row_default_height: main_params.row_default_height
                 row_force_default: True
-        
-        
-        
-                
-        
+                            
+
+
+    TabbedPanelItem:
+        text: 'Power'
+        Label: 
             AnchorLayout:
         
                 anchor_x: 'left'
                 anchor_y: 'bottom'
         
-                x: root.x + 0.5*root.width
+                x: root.x + 0.25*root.width
                 y: root.y + 0.25*root.height
         
                 width: 0.4 * root.width
-                height: 0.5 * root.height
-        
-                Graph:
-                    id: graph
-                    xlabel: 'Time'
-                    ylabel: 'Power'
-                    background_color: [0,1,0,0]
-                    ymin: 10
-                    ymax: 110
-                    xmin: 0
-                    xmax: 100
-                    y_grid: 'True'
-                    y_ticks_major: 20
-                    y_grid_label: 'True'
-                    x_grid_label: 'True'
-                    x_grid: 'True'
-                    x_ticks_major: 10
+                height: 0.5 * root.height        
 
-    TabbedPanelItem:
-        text: 'Power'
-        Label: 
+                EchoLabel:
+                    font_size: 200
+                    text: str(root.power)
 
     TabbedPanelItem:
         text: 'Power plot'
         Label: 
+            AnchorLayout:
+        
+                anchor_x: 'left'
+                anchor_y: 'bottom'
+        
+                x: root.x + 0.1*root.width
+                y: root.y + 0.1*root.height
+        
+                width: 0.8 * root.width
+                height: 0.8 * root.height
+        
 
+                Graph:
+                    id: graph
+                    xlabel: 'Time (Sec)'
+                    ylabel: 'Power (mW)'
+                    ymin: 0.000001
+                    ymax: 10
+                    xmin: 0
+                    xmax: 300
+                    #y_grid: True
+                    y_ticks_major: 5
+                    y_grid_label: 'True'
+                    x_grid_label: 'True'
+                    x_grid: 'True'
+                    x_ticks_major: 60
+                    label_options: dict(color=[1,1,1,1],bold='True')
     TabbedPanelItem:
         text: 'Power Log'
         Label: 
