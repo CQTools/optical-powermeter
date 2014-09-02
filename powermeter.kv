@@ -29,7 +29,7 @@
                 cols: 1
                 x: root.width / 8
                 width: root.width / 2
-                top: root.height - root.height / 8
+                top: root.height - root.height / 6
                 row_default_height: 50
                 row_force_default: True
         
@@ -92,17 +92,23 @@
                 EchoLabel:
                     text: str(root.voltage) 
                     
-                
+            AnchorLayout:
         
-               
-            GridLayout:
-                cols: 3
-                x: main_params.x
-                y: main_params.y - main_params.height - 2*main_params.row_default_height
-                width: main_params.width
-                row_default_height: main_params.row_default_height
-                row_force_default: True
-                            
+                anchor_x: 'left'
+                anchor_y: 'bottom'
+        
+                x: root.x + 0.7*root.width
+                y: root.y + 0.5*root.height
+        
+                width: 0.3 * root.width
+                height: 0.3 * root.height        
+
+        
+
+                Image:
+                    source: root.logo
+                    size: [240,192]
+                    size_hint: None, None
 
 
     TabbedPanelItem:
@@ -113,7 +119,7 @@
                 cols: 4
                 x: root.width / 8
                 width: root.width / 2
-                top: root.height - root.height / 10
+                top: root.height - root.height / 6
                 row_default_height: 50
                 row_force_default: True
                 spacing: [50,50]

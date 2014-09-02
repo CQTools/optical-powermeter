@@ -11,6 +11,7 @@ Config.set('graphics', 'height', '720')
 Config.write()
 from kivy.app import App
 from kivy.uix.textinput import TextInput
+from kivy.lang import Builder
 from kivy.properties import NumericProperty, BooleanProperty, ObjectProperty, BoundedNumericProperty,ListProperty, StringProperty
 from kivy.clock import Clock
 from kivy.utils import platform
@@ -54,18 +55,8 @@ class PowerMeterControl(TabbedPanel):
     tick_color = ListProperty([0,1,0,1])
     wavelength = BoundedNumericProperty(780.0,min=340.0,max=1180,errorhandler=lambda x: 1180 if x > 1180 else 340)
     connected = BooleanProperty(False)
-    #canvas.add(Color(1., 1., 0))
-    #canvas.add(Rectangle(size=(50, 50)))
-    graph_theme = {
-                'label_options': {
-                'color': rgb('444444'),
-                'bold': True},
-                'background_color': rgb('f8f8f2'),
-                'tick_color': '[1,0,0,1]',
-                'border_color': (0,0,0,1),
-                'draw_border':True}
-
-    graph = Graph(**graph_theme)
+    logo = 'CQTtools_inverted.png'
+    graph = Graph()
 
 
     plot = ObjectProperty(None)
