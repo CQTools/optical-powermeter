@@ -5,6 +5,10 @@ Created on Wed Aug 27 11:13:37 2014
 @author: nick
 """
 
+from kivy.config import Config
+Config.set('graphics', 'width', '1280')# set screen size to nexus 7 dimensions looks ok on PC
+Config.set('graphics', 'height', '720')
+Config.write()
 from kivy.app import App
 from kivy.uix.textinput import TextInput
 from kivy.properties import NumericProperty, BooleanProperty, ObjectProperty, BoundedNumericProperty,ListProperty, StringProperty
@@ -22,6 +26,8 @@ import json
 import powermeter as pm
 
 from kivy.core.window import Window
+
+
 #Window.clearcolor = (1, 1, 1, 1)
 
 
@@ -40,7 +46,9 @@ class FloatInput(TextInput):
         return super(FloatInput, self).insert_text(s, from_undo=from_undo)
 
 class PowerMeterControl(TabbedPanel):
-    power = StringProperty('0.0')
+    fpower = StringProperty('0.0')
+    power = NumericProperty(0.0)
+    pm_range = NumericProperty(4)
     max_power = NumericProperty(0.0)
     voltage = NumericProperty(0)
     tick_color = ListProperty([0,1,0,1])
@@ -68,10 +76,11 @@ class PowerMeterControl(TabbedPanel):
     #print connection
     def update(self, dt):
         self.voltage = float(self.powermeter.get_voltage())
-        self.power = 'f'#self.amp2power(self.voltage,self.wavelength,int(self.pm_range))
+        self.power = self.amp2power(self.voltage,self.wavelength,int(self.pm_range))
+        self.fpower = self.formated_power() #
         self.power_max()
         #print self.powermeter.get_voltage()
-        self.plot.points.append((self.iteration, self.iteration*0.001))
+        self.plot.points.append((self.iteration, self.power*0.001))
         print self.plot.points
         self.iteration += 1
         if self.iteration > 150:
@@ -80,8 +89,9 @@ class PowerMeterControl(TabbedPanel):
        
 
     def update_range(self, value):
-        self.pm_range = value
+        self.pm_range = 4
         if self.connected == True:
+            self.pm_range = value
             self.powermeter.set_range(int(self.pm_range))
         
 
@@ -133,10 +143,23 @@ class PowerMeterControl(TabbedPanel):
         power = amp/float(responsivity)
         return power
     
-    def format_power(self,power):
+    def formated_power(self):
+        power = 20e-9#self.amp2power(self.voltage,self.wavelength,int(self.pm_range))
         fpower = power*1000
-                
-        return fpower
+        if 1 < fpower < 30:
+            fpower = round(fpower,2)
+            out = str(fpower) + 'mW'
+        elif 0.001 < fpower < 1:
+            fpower = round(fpower*1000,2)
+            out =  str(fpower) + 'uW'
+        elif 10e-6 < fpower < 0.001:
+            fpower = round(fpower*1e6,2)
+            out =  str(fpower) + 'nW'
+        elif fpower < 0.00001:
+            out = 'Low'
+        else:
+            out = 'High'
+        return out
     
     def power_max(self):
         if self.max_power < self.power:
