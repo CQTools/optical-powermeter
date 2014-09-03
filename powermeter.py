@@ -14,15 +14,14 @@ class pmcommunication(object):
     
     def __init__(self, port):
         self.serial = self._open_port(port)
-        #self.serial.write('a''\n')# flush io buffer
-        #self._serial_read() #will read unknown command
-        #self.data = self._read_cal_file() #reads in calibration file once stored as object data
+        self._serial_write('a')# flush io buffer
+        print self._serial_read() #will read unknown command
         #self.set_range(4) #Sets bias resistor to 1k
         
     def _open_port(self, port):
-        ser = serial.Serial(port, self.baudrate, timeout=5)
-        ser.readline()
-        ser.timeout = 1
+        ser = serial.Serial(port, timeout=5)
+        #ser.readline()
+        #ser.timeout = 1 #causes problem with nexus 7
         return ser
     
     def _serial_write(self, string):
@@ -32,8 +31,6 @@ class pmcommunication(object):
         msg_string = self.serial.readline()
         # Remove any linefeeds etc
         msg_string = msg_string.rstrip()
-        # if msg_string == 'Unknown command': #inserted to get around a bug in firmware
-        #     msg_string = '1.0' # will remove once bug fixed
         return msg_string
     
     def reset(self):
@@ -41,7 +38,7 @@ class pmcommunication(object):
         return self._serial_read()
         
     def get_voltage(self):
-        self._serial_write('IN?3')
+        self._serial_write('VOLT?')
         voltage = self._serial_read()
         #print voltage
         return voltage

@@ -11,14 +11,11 @@ Config.set('graphics', 'height', '720')
 Config.write()
 from kivy.app import App
 from kivy.uix.textinput import TextInput
-from kivy.lang import Builder
 from kivy.properties import NumericProperty, BooleanProperty, ObjectProperty, BoundedNumericProperty,ListProperty, StringProperty
 from kivy.clock import Clock
 from kivy.utils import platform
-from kivy.graphics import Mesh, Color, Rectangle
 from kivy.garden.graph import Graph, MeshLinePlot
 from kivy.uix.tabbedpanel import TabbedPanel
-from kivy.utils import get_color_from_hex as rgb
 import re
 import os
 import glob
@@ -49,7 +46,6 @@ class FloatInput(TextInput):
 class PowerMeterControl(TabbedPanel):
     fpower = StringProperty('0.0')
     power = NumericProperty(0.0)
-    pm_range = NumericProperty(4)
     max_power = NumericProperty(0.0)
     voltage = NumericProperty(0)
     tick_color = ListProperty([0,1,0,1])
@@ -62,39 +58,45 @@ class PowerMeterControl(TabbedPanel):
     plot = ObjectProperty(None)
 
     powermeter = None
-
+    
+    pm_range = 4
+    
     iteration = 0
+    
+    dt = 0.25
     #print connection
     def update(self, dt):
         self.voltage = float(self.powermeter.get_voltage())
         self.power = self.amp2power(self.voltage,self.wavelength,int(self.pm_range))
         self.fpower = self.formated_power() #
-        self.power_max()
-        #print self.powermeter.get_voltage()
-        self.plot.points.append((self.iteration, self.power*0.001))
-        print self.plot.points
-        self.iteration += 1
+        #self.power_max()
+        self.plot.points.append((self.iteration, self.power*1000))
+        #print self.plot.points
+        self.iteration += 1*dt
         if self.iteration > 150:
             self.iteration = 0
             self.plot.points = []
        
 
     def update_range(self, value):
-        self.pm_range = 4
+        self.pm_range = value
         if self.connected == True:
             self.pm_range = value
             self.powermeter.set_range(int(self.pm_range))
+            print self.pm_range
+            return self.pm_range
         
 
     def connect_to_powermeter(self, connection):
         if not self.connected:
             if platform == 'android': #to get access to serial port on android
-                os.system("su root chmod 777 " + connection) 
+                os.system("su -c chmod 777 " + connection)#has to run as child otherwise will not work with all su binarys
             self.data = self._read_cal_file()
             self.powermeter = pm.pmcommunication(connection)
-            Clock.schedule_interval(self.update, 0.5)
+            Clock.schedule_interval(self.update, self.dt)
             self.connected = True
-            plot = MeshLinePlot(color=[1, 0, 0, 1])
+            self.update_range(self.pm_range)
+            plot = MeshLinePlot(color=[1, 1, 1, 1])
             self.plot = plot
             self.ids.graph.add_plot(plot)
  
@@ -135,9 +137,9 @@ class PowerMeterControl(TabbedPanel):
         return power
     
     def formated_power(self):
-        power = 20e-9#self.amp2power(self.voltage,self.wavelength,int(self.pm_range))
+        power = self.amp2power(self.voltage,self.wavelength,int(self.pm_range))
         fpower = power*1000
-        if 1 < fpower < 30:
+        if 1 < fpower < 100:
             fpower = round(fpower,2)
             out = str(fpower) + 'mW'
         elif 0.001 < fpower < 1:
@@ -146,7 +148,7 @@ class PowerMeterControl(TabbedPanel):
         elif 10e-6 < fpower < 0.001:
             fpower = round(fpower*1e6,2)
             out =  str(fpower) + 'nW'
-        elif fpower < 0.00001:
+        elif fpower < 10e-6:
             out = 'Low'
         else:
             out = 'High'

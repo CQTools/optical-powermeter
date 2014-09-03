@@ -78,13 +78,13 @@
                     text: 'Select Range'
                 
                 Spinner:
-                    id: select_range
+                    id: select_range_2
                     #is_open: True
                     #on_release: root.update_parameter(select_range.text) 
-                    text: '4'
+                    text: str(root.pm_range)
                     values:('1','2','3','4','5')
                     size_hint_y: None
-                    _on_dropdown_select: root.update_range(select_range.text)
+                    _on_dropdown_select: root.update_range(select_range_2.text)
         
                 PropertyLabel:
                     text: 'Detector Voltage'
@@ -142,7 +142,7 @@
                     id: select_range
                     #is_open: True
                     #on_release: root.update_parameter(select_range.text) 
-                    text: '4'
+                    text: str(root.pm_range)
                     values:('1','2','3','4','5')
                     size_hint_y: None
                     _on_dropdown_select: root.update_range(select_range.text)
@@ -152,14 +152,14 @@
                 anchor_x: 'left'
                 anchor_y: 'bottom'
         
-                x: root.x + 0.1*root.width
-                y: root.y + 0.25*root.height
+                x: root.x #+ root.width
+                y: root.y + 0.15*root.height
         
-                width: 0.8 * root.width
-                height: 0.5 * root.height        
+                width: root.width
+                height: 0.7 * root.height        
 
                 EchoLabel:
-                    font_size: 200
+                    font_size: 300
                     text: str(root.fpower)
 
             GridLayout:
@@ -169,7 +169,7 @@
                 x: root.width / 8
                 width: root.width/1.5 
                 top: 200
-                row_default_height: 40
+                row_default_height: 60
                 row_force_default: True
                 
                 Button:
@@ -218,16 +218,16 @@
                     id: graph
                     xlabel: 'Time (Sec)'
                     ylabel: 'Power (mW)'
-                    ymin: 0.000001
+                    ymin: 0
                     ymax: 10
                     xmin: 0
-                    xmax: 300
+                    xmax: 150
                     y_grid: True
                     y_ticks_major: 2
                     y_grid_label: 'True'
                     x_grid_label: 'True'
                     #x_grid: 'True'
-                    x_ticks_major: 60
+                    x_ticks_major: 50
                     label_options: dict(color=[1,1,1,1],bold='True')
     TabbedPanelItem:
         text: 'Power Log'
