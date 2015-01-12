@@ -23,6 +23,11 @@ class pmcommunication(object):
         #ser.readline()
         #ser.timeout = 1 #causes problem with nexus 7
         return ser
+        
+    def close_port(self):
+        self.serial.close()
+
+        
     
     def _serial_write(self, string):
         self.serial.write(string + '\n')

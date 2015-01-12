@@ -2,13 +2,13 @@
     halign: 'left'
     text_size: self.width, None
     #color: [0,0,0,1]
-    font_size: 20
+    font_size: 35
 
 <EchoLabel@PropertyLabel>:
     halign: 'center'
     text_size: self.width, None
     #color: [0,0,0,1]
-    font_size: 20
+    font_size: 35
 
 
 
@@ -29,8 +29,8 @@
                 cols: 1
                 x: root.width / 8
                 width: root.width / 2
-                top: root.height - root.height / 6
-                row_default_height: 50
+                top: root.height - root.height/8
+                row_default_height: 70
                 row_force_default: True
         
                 PropertyLabel:
@@ -55,7 +55,7 @@
                 x: connection_box.x
                 width: connection_box.width
                 row_default_height: connection_box.row_default_height
-                top: connection_box.y - self.row_default_height
+                top: connection_box.y - self.row_default_height*2
                 row_force_default: True
         
                 PropertyLabel:
@@ -73,7 +73,7 @@
                     text: str(root.wavelength)
                     #value:780            
                     on_text_validate: root.wavelength = (float(self.text))
-                    font_size: 20
+                    font_size: 50
                 PropertyLabel:
                     text: 'Select Range'
                 
@@ -118,11 +118,11 @@
                 id: power_pannel
                 cols: 4
                 x: root.width / 8
-                width: root.width / 2
+                width: root.width/1.2
                 top: root.height - root.height / 6
                 row_default_height: 50
                 row_force_default: True
-                spacing: [50,50]
+                spacing: [40,40]
 
                 PropertyLabel:
                     text: 'Wavelength'
@@ -133,7 +133,7 @@
                     text: str(root.wavelength)
                     #value:780            
                     on_text_validate: root.wavelength = (float(self.text))
-                    font_size: 20
+                    font_size: 35
         
                 PropertyLabel:
                     text: 'Select Range'
@@ -215,7 +215,7 @@
         
 
                 Graph:
-                    id: graph
+                    id: graph1
                     xlabel: 'Time (Sec)'
                     ylabel: 'Power (mW)'
                     ymin: 0

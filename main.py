@@ -23,10 +23,6 @@ import json
 
 import powermeter as pm
 
-from kivy.core.window import Window
-
-
-#Window.clearcolor = (1, 1, 1, 1)
 
 
 class FloatInput(TextInput): 
@@ -64,18 +60,21 @@ class PowerMeterControl(TabbedPanel):
     iteration = 0
     
     dt = 0.25
-    #print connection
+    
+
     def update(self, dt):
         self.voltage = float(self.powermeter.get_voltage())
         self.power = self.amp2power(self.voltage,self.wavelength,int(self.pm_range))
         self.fpower = self.formated_power() #
         #self.power_max()
-        self.plot.points.append((self.iteration, self.power*1000))
+        self.plot.points.append((self.iteration*dt,self.power*1000))
         #print self.plot.points
         self.iteration += 1*dt
         if self.iteration > 150:
             self.iteration = 0
             self.plot.points = []
+            self.ids.graph1.remove_plot(self.plot)
+  
        
 
     def update_range(self, value):
@@ -96,9 +95,10 @@ class PowerMeterControl(TabbedPanel):
             Clock.schedule_interval(self.update, self.dt)
             self.connected = True
             self.update_range(self.pm_range)
-            plot = MeshLinePlot(color=[1, 1, 1, 1])
+            plot = MeshLinePlot(color=[0, 1, 0, 1])
+            self.ids.graph1.add_plot(plot)
             self.plot = plot
-            self.ids.graph.add_plot(plot)
+            return self.powermeter
  
     def serial_ports_android(self):
         #Lists serial ports
@@ -161,15 +161,25 @@ class PowerMeterControl(TabbedPanel):
       
 class PowermeterApp(App):
     def build(self):
-        control = PowerMeterControl()
-      
-        return control
+        self.control = PowerMeterControl()
+        return self.control
     
     def on_pause(self):
         return True
         
     def on_resume(self):
         pass
+    
+    def on_stop(self):
+        self.control.powermeter.reset()
+        self.control.powermeter.close_port()
+        #from jnius import autoclass
+        #UsbDeviceConnection = autoclass('android.hardware.usb.UsbDeviceConnection')
+        #usbotg = UsbDeviceConnection()
+        #usbotg.close()
+        print 'Port Closed'
+        return 
+
 
 
 
