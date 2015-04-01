@@ -109,7 +109,7 @@ class PowerMeterControl(TabbedPanel):
         """this section of the code deals with converting between the voltage value and the
     optical power at the wavelength of interest"""
     
-    resistors = [1e6,110e3,10e3,1e3,100]    #sense resistors adjust to what is on the board
+    resistors = [1e6,110e3,10e3,1e3,20]    #sense resistors adjust to what is on the board
     
     file_name = 's5106_interpolated.cal'    #detector calibration file
     
@@ -139,7 +139,7 @@ class PowerMeterControl(TabbedPanel):
     def formated_power(self):
         power = self.amp2power(self.voltage,self.wavelength,int(self.pm_range))
         fpower = power*1000
-        if 1 < fpower < 100:
+        if 1 < fpower < 500:
             fpower = round(fpower,2)
             out = str(fpower) + 'mW'
         elif 0.001 < fpower < 1:
